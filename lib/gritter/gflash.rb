@@ -7,24 +7,26 @@ module Gritter
       end
       super(options, response_status_and_flash)
     end
-    
+
     def gflash *args
+
       session[:gflash] ||= {}
+
       options = args.extract_options!
-      
+
       if args.size == 1 && args.first.is_a?(Array)
         args = args.first
       end
-      
+
       flash_now = args.include?(:now)
       args.delete(:now) if flash_now
-      
+
       if args.present?
         args.each do |key|
           gflash_push(key, gflash_translation(key, options[:locals]), flash_now)
         end
       end
-      
+
       options.except(:locals).each do |key, value|
         if value.is_a?(Hash)
           if value.has_key?(:value)
@@ -38,17 +40,18 @@ module Gritter
         gflash_push(key, value, flash_now)
       end
     end
-  
+
   private
-    
+
     def gflash_text(key, value, options={})
       value == true ? gflash_translation(key, options) : value
     end
-    
+
     def gflash_push(key, value, now=false)
+
       session[:gflash][key] ||= []
       session[:gflash][key].push(value)
-      
+
       if Gritter.rails_flash_fallback
         if now
           flash.now[key] ||= []
@@ -59,15 +62,15 @@ module Gritter
         end
       end
     end
-    
+
     def gflash_translation(key, options)
       options ||= {}
-      
+
       i18n_default_key = "gflash.defaults.#{key}"
       i18n_default_action_key = "gflash.defaults.#{params[:action]}.#{key}"
       i18n_key = "gflash.#{params[:controller]}.#{params[:action]}.#{key}"
       i18n_key.gsub!(/\//, ".")
-      
+
       begin
         options[:raise] = true
         translation = I18n.t(i18n_key, options)
@@ -79,7 +82,7 @@ module Gritter
           translation = I18n.t(i18n_default_key, options)
         end
       end
-      
+
       translation
     end
   end
